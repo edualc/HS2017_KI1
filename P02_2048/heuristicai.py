@@ -18,6 +18,7 @@ def find_best_move(board):
     return bestmove
 
 def find_best_move_random_agent(board):
+
     # return a board that simulates a certain move
     try_right = execute_move(RIGHT, board)
     try_left = execute_move(LEFT, board)

@@ -14,6 +14,7 @@ import time
 import os
 import searchai    #for task 3
 import heuristicai #for task 2
+import heuristicai2 #for task 2
 
 def print_board(m):
     for row in m:
@@ -37,7 +38,8 @@ def to_score(m):
     return [[_to_score(c) for c in row] for row in m]
 
 def find_best_move(board):
-    return heuristicai.find_best_move(board)
+    #return heuristicai.find_best_move(board)
+    return heuristicai2.find_best_move(board)
     #return searchai.find_best_move(board)
 
 def movename(move):
