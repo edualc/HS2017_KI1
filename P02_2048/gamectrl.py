@@ -32,11 +32,11 @@ class Generic2048Control(object):
 
     def restart_game(self):
         self.send_key_event('keydown', 82)
-        time.sleep(0.1)
+        time.sleep(0.001)
         self.send_key_event('keyup', 82)
 
         self.send_key_event('keydown', 32)
-        time.sleep(0.1)
+        time.sleep(0.001)
         self.send_key_event('keyup', 32)
 
     def continue_game(self):
@@ -74,7 +74,7 @@ class Fast2048Control(Generic2048Control):
 
         # Send an "up" event, which will trigger our replaced isGameTerminated function
         self.send_key_event('keydown', 38)
-        time.sleep(0.1)
+        time.sleep(0.001)
         self.send_key_event('keyup', 38)
 
         self.execute('GameManager.prototype.isGameTerminated = _func_tmp;')
@@ -170,9 +170,9 @@ class Keyboard2048Control(Generic2048Control):
     def execute_move(self, move):
         key = [38, 40, 37, 39][move]
         self.send_key_event('keydown', key)
-        time.sleep(0.001)
+        # time.sleep(0.000001)
         self.send_key_event('keyup', key)
-        time.sleep(0.001)
+        # time.sleep(0.000001)
 
 class Hybrid2048Control(Fast2048Control, Keyboard2048Control):
     ''' Control 2048 by hooking the GameManager and using keyboard inputs.
