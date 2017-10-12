@@ -48,7 +48,7 @@ def find_best_move_random_agent(board):
     '''
     move_possible_array = [0, 0, 0, 0]
     
-    for i in range(0,3):
+    for i in range(0,4):
         if move_possible(i, board):
             move_possible_array[i] = 1
             
@@ -59,7 +59,7 @@ def find_best_move_random_agent(board):
     '''
     heuristic_array = [999, 999, 999, 999]
     
-    for i in range(0,3):
+    for i in range(0,4):
         if move_possible_array[i] > 0:
             board_to_check = execute_move(i, board)
             
@@ -72,7 +72,7 @@ def find_best_move_random_agent(board):
                 htic = 0
                 
             # add heuristics together
-            heuristic_array[i] = (-5 * act) + ndh + ecc + htic
+            heuristic_array[i] = (-2*act) + (4*ndh) - ecc + htic
             
     print(heuristic_array)
         
@@ -80,7 +80,7 @@ def find_best_move_random_agent(board):
     Choose the best move out of all possible
     '''
     best_move = 0
-    for i in range(0,3):
+    for i in range(0,4):
         if heuristic_array[i] < heuristic_array[best_move]:
             best_move = i
             
@@ -166,7 +166,7 @@ def amount_of_combineable_tiles(move, board):
         '''
         0,1 = UP, DOWN
         '''
-        for y in range(0,3):
+        for y in range(0,4):
             if (new_board[0][y] == new_board[1][y]):
                 if (new_board[1][y] == new_board[2][y]) and (new_board[2][y] == new_board[3][y]):
                     # xxxx
@@ -184,7 +184,7 @@ def amount_of_combineable_tiles(move, board):
         '''
         2,3 = LEFT, RIGHT
         '''
-        for x in range(0,3):
+        for x in range(0,4):
             if (new_board[x][0] == new_board[x][1]):
                 if (new_board[x][1] == new_board[x][2]) and (new_board[x][2] == new_board[x][3]):
                     # xxxx
@@ -205,31 +205,31 @@ def neighbour_difference_heuristic(board):
     heuristic_score = 0 # initialize score
     heuristics_board = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
     
-    for x in range(0,3):
-        for y in range(0,3):
+    for x in range(0,4):
+        for y in range(0,4):
             current_tile = board[x][y]
             current_tile_score = 1000 # initialize too big
             
             # check top neighbour
-            if (y-1) in range(0,3):
+            if (y-1) in range(0,4):
                 top_score = _evaluate_tile_ratio(current_tile, board[x][y-1])
                 if top_score < current_tile_score:
                     current_tile_score = top_score
             
             # check right neighbour
-            if (x+1) in range(0,3):
+            if (x+1) in range(0,4):
                 right_score = _evaluate_tile_ratio(current_tile, board[x+1][y])
                 if right_score < current_tile_score:
                     current_tile_score = right_score
             
             # check bottom neighbour
-            if (y+1) in range(0,3):
+            if (y+1) in range(0,4):
                 bottom_score = _evaluate_tile_ratio(current_tile, board[x][y+1])
                 if bottom_score < current_tile_score:
                     current_tile_score = bottom_score
             
             # check left neighbour
-            if (x-1) in range(0,3):
+            if (x-1) in range(0,4):
                 left_score = _evaluate_tile_ratio(current_tile, board[x-1][y])
                 if left_score < current_tile_score:
                     current_tile_score = left_score
