@@ -3,12 +3,16 @@ import game
 import sys
 import time
 import math
+import csv
 
 # Author:				chrn (original by nneonneo)
 # Date:				11.11.2016
 # Description:			The logic of the AI to beat the game.
 
 UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
+
+file_writer = None
+ai_id = 0
 
 def find_best_move(board):
     bestmove = -1    
@@ -77,8 +81,6 @@ def find_best_move_random_agent(board):
                 
             # add heuristics together
             heuristic_array[i] = (-2*act) + (4*ndh) - ecc + htic
-            
-    print(heuristic_array)
         
     '''
     Choose the best move out of all possible
@@ -88,6 +90,9 @@ def find_best_move_random_agent(board):
         if heuristic_array[i] < heuristic_array[best_move]:
             best_move = i
             
+    _log([ai_id, ecc, ndh, ht, htich, move_possible_array, heuristic_array, best_move, to_score(board)]) # logging
+            
+    
     return best_move
         
 def execute_move(move, board):
@@ -287,3 +292,10 @@ def _evaluate_tile_ratio(cell, neighbour_cell):
         ratio = -1 * ratio
 
     return ratio
+
+def _log(line):
+    if file_writer is None:
+        return
+    
+    file_writer.writerow(line)
+    

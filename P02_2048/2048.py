@@ -11,10 +11,15 @@
 from __future__ import print_function
 
 import time
+import datetime
 import os
 import searchai    #for task 3
 import heuristicai #for task 2
 import heuristicai2 #for task 2
+import csv
+
+current_ai = heuristicai2
+games_to_be_played = 20
 
 def print_board(m):
     for row in m:
@@ -38,8 +43,16 @@ def to_score(m):
     return [[_to_score(c) for c in row] for row in m]
 
 def find_best_move(board):
+#    current_ai = heuristicai
+#    current_ai = heuristicai2
+#    current_ai = searchai
+    
+    return current_ai.find_best_move(board)
+    
+    
     #return heuristicai.find_best_move(board)
-    return heuristicai2.find_best_move(board)
+    
+#    return heuristicai2.find_best_move(board)
     #return searchai.find_best_move(board)
 
 def movename(move):
@@ -103,10 +116,24 @@ def main(argv):
         from gamectrl import Hybrid2048Control
         gamectrl = Hybrid2048Control(ctrl)
 
+
     if gamectrl.get_status() == 'ended':
         gamectrl.restart_game()
 
-    play_game(gamectrl)
+    for i in range(games_to_be_played):
+        '''
+        Initialize File Writer
+        '''
+        file_name = 'log/' + datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S') + '_' + current_ai.__name__ +'.csv'
+        with open(file_name, 'w', newline='') as csv_file:
+            file_writer = csv.writer(csv_file)
+            current_ai.file_writer = file_writer
+            file_writer.writerow(['id','empty_cells_count','neighbour_difference_heuristic','highest_tile','highest_tile_in_corner_heuristic','move_possible_array','heuristic_array','best_move','score'])
+        
+            current_ai.ai_id = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S') # identify for logging
+            play_game(gamectrl)
+            gamectrl.restart_game()
+        
 
 if __name__ == '__main__':
     import sys
