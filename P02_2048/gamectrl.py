@@ -170,7 +170,7 @@ class Keyboard2048Control(Generic2048Control):
     def execute_move(self, move):
         key = [38, 40, 37, 39][move]
         self.send_key_event('keydown', key)
-        # time.sleep(0.000001)
+#        time.sleep(1)
         self.send_key_event('keyup', key)
         # time.sleep(0.000001)
 

@@ -2,6 +2,7 @@ import random
 import game
 import sys
 import time
+import math
 
 # Author:				chrn (original by nneonneo)
 # Date:				11.11.2016
@@ -20,18 +21,21 @@ def find_best_move(board):
 
 '''
 1) play 'randomly' with adjusted weight values, one move direction is prohibited
-2) when space gets crowded, try to see which move keeps your board cleanest
-3) get a heuristic for "crowdedness"
-4) get a heuristic for "difference in sizes"
-5) try combining as much as possible
+2) when space gets crowded, try to see which move keeps your board cleanest => which move keeps the crowdedness lowest
+3) get a heuristic for "crowdedness" => how many spaces are empty
+4) get a heuristic for "difference in sizes" => how much is the difference to the closest neighbouring tile
+5) get a heuristic for "amount of tiles possibly combined"
+6) try combining as much as possible
 '''
 def find_best_move_random_agent(board):
     print(' *** ')
+    
+    print_board(board)
+    
+    print(' * ')
     ecc = empty_cells_count(board)
     print(f'Empty Cells Count   \t {ecc} => ',
           'PANIC!' if ecc < 4 else 'normal')
-    bcph = bad_chess_pattern_heuristic(board)
-    print(f'Bad Chess Pattern   \t {bcph}')
     ndh = neighbour_difference_heuristic(board)
     print(f'Neighbour Difference\t {ndh}')
     ht = highest_tile(board)
@@ -39,34 +43,49 @@ def find_best_move_random_agent(board):
     htich = highest_tile_in_corner_heuristic(board)
     print(f'Highest in Corner   \t {htich}')
     
-    
-
-    
     '''
-    print_board(board)
-    print()
-    print(to_val(board))
-    print()
-    time.sleep(1)
+    Which moves are possible? 1 for possible, 0 for not possible
     '''
+    move_possible_array = [0, 0, 0, 0]
     
-    only_down_possible = (not move_possible(UP, board)) and (not move_possible(LEFT, board)) and (not move_possible(RIGHT, board))
+    for i in range(0,3):
+        if move_possible(i, board):
+            move_possible_array[i] = 1
+            
+    print(move_possible_array)
+            
+    '''
+    What are the scores for each move?
+    '''
+    heuristic_array = [999, 999, 999, 999]
     
-    if only_down_possible:
-        keep_highest_tile_in_corner(DOWN, board)
-        return DOWN
-    else:
-        if move_possible(UP, board):
-            keep_highest_tile_in_corner(UP, board)
-            return UP
-        else:
-            if move_possible(LEFT, board):
-                keep_highest_tile_in_corner(LEFT, board)
-                return LEFT
-            else:
-                keep_highest_tile_in_corner(RIGHT, board)
-                return RIGHT    
-    
+    for i in range(0,3):
+        if move_possible_array[i] > 0:
+            board_to_check = execute_move(i, board)
+            
+            htic = 100
+            
+            act = amount_of_combineable_tiles(i, board)
+            ndh = neighbour_difference_heuristic(board_to_check)
+            ecc = empty_cells_count(board_to_check)
+            if keep_highest_tile_in_corner(i, board):
+                htic = 0
+                
+            # add heuristics together
+            heuristic_array[i] = (-5 * act) + ndh + ecc + htic
+            
+    print(heuristic_array)
+        
+    '''
+    Choose the best move out of all possible
+    '''
+    best_move = 0
+    for i in range(0,3):
+        if heuristic_array[i] < heuristic_array[best_move]:
+            best_move = i
+            
+    return best_move
+        
 def execute_move(move, board):
     """
     move and return the grid without a new random tile 
@@ -135,19 +154,97 @@ def cell_of_type_count(cell_val, board):
                 cell_count += 1
     return cell_count
 
-# TODO
-def bad_chess_pattern_heuristic(board):
-    return 0
+def amount_of_combineable_tiles(move, board):
+    new_board = execute_move(move, board)
+    
+    combineable_tiles_count = 0
+    
+    '''
+    Check Directions
+    '''
+    if (move == 0) or (move == 1):
+        '''
+        0,1 = UP, DOWN
+        '''
+        for y in range(0,3):
+            if (new_board[0][y] == new_board[1][y]):
+                if (new_board[1][y] == new_board[2][y]) and (new_board[2][y] == new_board[3][y]):
+                    # xxxx
+                    combineable_tiles_count += 2
+                else:
+                    # xxab. xxxa
+                    combineable_tiles_count += 1
+            elif (new_board[1][y] == new_board[2][y]):
+                # axxx, axxb
+                combineable_tiles_count += 1
+            elif (new_board[2][y] == new_board[3][y]):
+                # abxx
+                combineable_tiles_count += 1
+    else:
+        '''
+        2,3 = LEFT, RIGHT
+        '''
+        for x in range(0,3):
+            if (new_board[x][0] == new_board[x][1]):
+                if (new_board[x][1] == new_board[x][2]) and (new_board[x][2] == new_board[x][3]):
+                    # xxxx
+                    combineable_tiles_count += 2
+                else:
+                    # xxab. xxxa
+                    combineable_tiles_count += 1
+            elif (new_board[x][1] == new_board[x][2]):
+                # axxx, axxb
+                combineable_tiles_count += 1
+            elif (new_board[x][2] == new_board[x][3]):
+                # abxx
+                combineable_tiles_count += 1
+                
+    return combineable_tiles_count
 
-# TODO
 def neighbour_difference_heuristic(board):
-    return 0
+    heuristic_score = 0 # initialize score
+    heuristics_board = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+    
+    for x in range(0,3):
+        for y in range(0,3):
+            current_tile = board[x][y]
+            current_tile_score = 1000 # initialize too big
+            
+            # check top neighbour
+            if (y-1) in range(0,3):
+                top_score = _evaluate_tile_ratio(current_tile, board[x][y-1])
+                if top_score < current_tile_score:
+                    current_tile_score = top_score
+            
+            # check right neighbour
+            if (x+1) in range(0,3):
+                right_score = _evaluate_tile_ratio(current_tile, board[x+1][y])
+                if right_score < current_tile_score:
+                    current_tile_score = right_score
+            
+            # check bottom neighbour
+            if (y+1) in range(0,3):
+                bottom_score = _evaluate_tile_ratio(current_tile, board[x][y+1])
+                if bottom_score < current_tile_score:
+                    current_tile_score = bottom_score
+            
+            # check left neighbour
+            if (x-1) in range(0,3):
+                left_score = _evaluate_tile_ratio(current_tile, board[x-1][y])
+                if left_score < current_tile_score:
+                    current_tile_score = left_score
+            
+            heuristic_score += current_tile_score
+            heuristics_board[x][y] = current_tile_score
+            
+#    print_board(heuristics_board)
+    return heuristic_score
 
 def highest_tile_in_corner_heuristic(board):
     highest_cell = highest_tile(board)
     if (_to_val(board[0][0]) >= highest_cell) or (_to_val(board[0][3]) >= highest_cell) or (_to_val(board[3][0]) >= highest_cell) or (_to_val(board[3][3]) >= highest_cell):
         return 0
-    return 1
+    return 5
     
 def highest_tile(board):
     highest_cell = 2;
@@ -166,3 +263,23 @@ def keep_highest_tile_in_corner(move, board):
         result = True
     #print(f'move: {move} // {result}')   
     return result
+
+def _evaluate_tile_ratio(cell, neighbour_cell):
+    '''
+    Compares two cells and returns their difference in exponent
+    '''
+    current_tile_exp = math.frexp(_to_val(cell))[1]
+    neighbour_tile_exp = math.frexp(_to_val(neighbour_cell))[1]
+    
+    if neighbour_tile_exp == 0:
+        return current_tile_exp
+    
+    ratio = current_tile_exp - neighbour_tile_exp
+
+    if ratio == 0:
+        return ratio
+
+    if ratio < 1:
+        ratio = -1 * ratio
+
+    return ratio
