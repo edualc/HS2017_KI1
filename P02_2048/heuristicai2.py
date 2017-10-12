@@ -26,6 +26,10 @@ def find_best_move(board):
 4) get a heuristic for "difference in sizes" => how much is the difference to the closest neighbouring tile
 5) get a heuristic for "amount of tiles possibly combined"
 6) try combining as much as possible
+    
+7) Heuristic: the bigger the tile, the more important it is to keep it close to higher tiles
+8) don't move corner once highest tile is inside a corner
+9) todo: echo stats as csv/log?
 '''
 def find_best_move_random_agent(board):
     print(' *** ')
