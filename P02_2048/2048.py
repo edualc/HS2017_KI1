@@ -19,7 +19,7 @@ import heuristicai2 #for task 2
 import csv
 
 current_ai = heuristicai2
-games_to_be_played = 20
+games_to_be_played = 30
 
 def print_board(m):
     for row in m:
@@ -75,6 +75,7 @@ def play_game(gamectrl):
         if move < 0:
             break
         print("%010.6f: Score %d, Move %d: %s" % (time.time() - start, gamectrl.get_score(), moveno, movename(move)))
+        current_ai.score = gamectrl.get_score()
         gamectrl.execute_move(move)
 
     score = gamectrl.get_score()
@@ -88,7 +89,7 @@ def parse_args(argv):
     parser = argparse.ArgumentParser(description="Use the AI to play 2048 via browser control")
     parser.add_argument('-p', '--port', help="Port number to control on (default: 32000 for Firefox, 9222 for Chrome)", type=int)
     parser.add_argument('-b', '--browser', help="Browser you're using. Only Firefox with the Remote Control extension, and Chrome with remote debugging, are supported right now.", default='firefox', choices=('firefox', 'chrome'))
-    parser.add_argument('-k', '--ctrlmode', help="Control mode to use. If the browser control doesn't seem to work, try changing this.", default='hybrid', choices=('keyboard', 'fast', 'hybrid'))
+    parser.add_argument('-k', '--ctrlmode', help="Control mode to use. If the browser control doesn't seem to work, try changing this.", default='fast', choices=('keyboard', 'fast', 'hybrid'))
 
     return parser.parse_args(argv)
 
@@ -128,7 +129,7 @@ def main(argv):
         with open(file_name, 'w', newline='') as csv_file:
             file_writer = csv.writer(csv_file)
             current_ai.file_writer = file_writer
-            file_writer.writerow(['id','empty_cells_count','neighbour_difference_heuristic','highest_tile','highest_tile_in_corner_heuristic','move_possible_array','heuristic_array','best_move','score'])
+            file_writer.writerow(['id','empty_cells_count','neighbour_difference_heuristic','highest_tile','highest_tile_in_corner_heuristic','best_move','score','amount_of_combineable_tiles','move_possible_array','heuristic_array'])
         
             current_ai.ai_id = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S') # identify for logging
             play_game(gamectrl)
