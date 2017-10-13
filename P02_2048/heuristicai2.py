@@ -14,7 +14,7 @@ UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
 file_writer = None
 ai_id = 0
 score = 0
-console_logging = True
+console_logging = False
 
 def find_best_move(board):
     bestmove = -1    
@@ -54,13 +54,8 @@ def find_best_move_random_agent(board):
     Choose the best move out of all possible
     '''
     best_move = get_best_move(heuristic_array)
-            
-    ecc = empty_cells_count(board)
-    ndh = neighbour_difference_heuristic(board)
-    ht = highest_tile(board)
-    htich = highest_tile_in_corner_heuristic(board)
     
-    _log([ai_id, ecc, ndh, ht, htich, best_move, score, amount_of_combineable_tiles(best_move, board), move_possible_array, heuristic_array]) # logging
+    _log([ai_id, empty_cells_count(board), neighbour_difference_heuristic(board), highest_tile(board), highest_tile_in_corner_heuristic(board), best_move, score, amount_of_combineable_tiles(best_move, board), move_possible_array, heuristic_array]) # logging
     return best_move
         
 def execute_move(move, board):
@@ -139,7 +134,7 @@ def get_possible_moves(board):
     return move_possible_array
 
 def build_heuristic_array(move_possible_array, board):
-    heuristic_array = [999, 999, 999, 999]
+    heuristic_array = [9999, 9999, 9999, 9999]
     
     for i in range(4):
         if move_possible_array[i] > 0:
@@ -160,12 +155,16 @@ def build_heuristic_array(move_possible_array, board):
                 if (htlp == new_htlp) or (htlp is None) or (new_htlp is None):
                     htic = 0                    
                 else:
-                    htic = 75
+                    htic = 100
             else:
                 htic = 100
                 
             # add heuristics together
-            heuristic_array[i] = (-2*act) + (4*ndh) - ecc + htic
+#            heuristic_array[i] = (4*ndh) - ecc + htic # ignore empty cells count (9)
+#            heuristic_array[i] = (4*ndh) - ecc + htic # ignore combineable tiles amount (8)
+#            heuristic_array[i] = (4*ndh) + htic # ignore both ecc and act (10)
+#            heuristic_array[i] = -act + ndh - ecc + htic (11)
+            heuristic_array[i] = (-2*act) + (4*ndh) - ecc + htic # original (1)
     
     return heuristic_array
 

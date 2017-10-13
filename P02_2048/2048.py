@@ -16,10 +16,12 @@ import os
 import searchai    #for task 3
 import heuristicai #for task 2
 import heuristicai2 #for task 2
+import heuristicai3 #for task 2
 import csv
 
 current_ai = heuristicai2
-games_to_be_played = 30
+games_to_be_played = 10
+games_played = []
 
 def print_board(m):
     for row in m:
@@ -43,17 +45,7 @@ def to_score(m):
     return [[_to_score(c) for c in row] for row in m]
 
 def find_best_move(board):
-#    current_ai = heuristicai
-#    current_ai = heuristicai2
-#    current_ai = searchai
-    
     return current_ai.find_best_move(board)
-    
-    
-    #return heuristicai.find_best_move(board)
-    
-#    return heuristicai2.find_best_move(board)
-    #return searchai.find_best_move(board)
 
 def movename(move):
     return ['up', 'down', 'left', 'right'][move]
@@ -74,7 +66,7 @@ def play_game(gamectrl):
         move = find_best_move(board)
         if move < 0:
             break
-        print("%010.6f: Score %d, Move %d: %s" % (time.time() - start, gamectrl.get_score(), moveno, movename(move)))
+#        print("%010.6f: Score %d, Move %d: %s" % (time.time() - start, gamectrl.get_score(), moveno, movename(move)))
         current_ai.score = gamectrl.get_score()
         gamectrl.execute_move(move)
 
@@ -82,6 +74,7 @@ def play_game(gamectrl):
     board = gamectrl.get_board()
     maxval = max(max(row) for row in to_val(board))
     print("Game over. Final score %d; highest tile %d." % (score, maxval))
+    games_played.append([score, maxval])
 
 def parse_args(argv):
     import argparse
@@ -89,7 +82,7 @@ def parse_args(argv):
     parser = argparse.ArgumentParser(description="Use the AI to play 2048 via browser control")
     parser.add_argument('-p', '--port', help="Port number to control on (default: 32000 for Firefox, 9222 for Chrome)", type=int)
     parser.add_argument('-b', '--browser', help="Browser you're using. Only Firefox with the Remote Control extension, and Chrome with remote debugging, are supported right now.", default='firefox', choices=('firefox', 'chrome'))
-    parser.add_argument('-k', '--ctrlmode', help="Control mode to use. If the browser control doesn't seem to work, try changing this.", default='fast', choices=('keyboard', 'fast', 'hybrid'))
+    parser.add_argument('-k', '--ctrlmode', help="Control mode to use. If the browser control doesn't seem to work, try changing this.", default='hybrid', choices=('keyboard', 'fast', 'hybrid'))
 
     return parser.parse_args(argv)
 
@@ -134,7 +127,13 @@ def main(argv):
             current_ai.ai_id = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S') # identify for logging
             play_game(gamectrl)
             gamectrl.restart_game()
-        
+    
+    # log totals (score + maxval)
+    file_name = 'log/' + datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S') + '_' + current_ai.__name__ + '_totals.csv'
+    with open(file_name, 'w', newline='') as csv_file2:
+        csv_writer2 = csv.writer(csv_file2)
+        for line in games_played:
+            csv_writer2.writerow(line)
 
 if __name__ == '__main__':
     import sys
