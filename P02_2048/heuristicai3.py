@@ -15,7 +15,7 @@ file_writer = None
 ai_id = 0
 score = 0
 console_logging = False
-look_up_depth = 4
+look_up_depth = 3
 
 def find_best_move(board):
     bestmove = -1    
@@ -147,8 +147,8 @@ def build_heuristic_array(move_possible_array, board):
         if move_possible_array[i] > 0:
             board_to_check = execute_move(i, board)
             
-#            empty_cells_heuristic = 2**(empty_cells_count(board_to_check) - 8) - 1
-            empty_cells_heuristic = 0
+            empty_cells_heuristic = 2**(empty_cells_count(board_to_check) - 8) - 1
+#            empty_cells_heuristic = 0
             neighbour_exponent_heuristic = neighbour_difference_heuristic(board_to_check)
             combineable_tiles_heuristic = amount_of_combineable_tiles(i, board)
             

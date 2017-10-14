@@ -82,7 +82,7 @@ def parse_args(argv):
     parser = argparse.ArgumentParser(description="Use the AI to play 2048 via browser control")
     parser.add_argument('-p', '--port', help="Port number to control on (default: 32000 for Firefox, 9222 for Chrome)", type=int)
     parser.add_argument('-b', '--browser', help="Browser you're using. Only Firefox with the Remote Control extension, and Chrome with remote debugging, are supported right now.", default='firefox', choices=('firefox', 'chrome'))
-    parser.add_argument('-k', '--ctrlmode', help="Control mode to use. If the browser control doesn't seem to work, try changing this.", default='hybrid', choices=('keyboard', 'fast', 'hybrid'))
+    parser.add_argument('-k', '--ctrlmode', help="Control mode to use. If the browser control doesn't seem to work, try changing this.", default='fast', choices=('keyboard', 'fast', 'hybrid'))
 
     return parser.parse_args(argv)
 
@@ -109,7 +109,6 @@ def main(argv):
     elif args.ctrlmode == 'hybrid':
         from gamectrl import Hybrid2048Control
         gamectrl = Hybrid2048Control(ctrl)
-
 
     if gamectrl.get_status() == 'ended':
         gamectrl.restart_game()

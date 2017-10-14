@@ -159,13 +159,22 @@ def build_heuristic_array(move_possible_array, board):
             else:
                 htic = 100
                 
+                
+            # scale different heuristics according to the same interval
+            # TODO
+            
+                
             # add heuristics together
 #            heuristic_array[i] = (4*ndh) - ecc + htic # ignore empty cells count (9)
 #            heuristic_array[i] = (4*ndh) - ecc + htic # ignore combineable tiles amount (8)
 #            heuristic_array[i] = (4*ndh) + htic # ignore both ecc and act (10)
 #            heuristic_array[i] = -act + ndh - ecc + htic (11)
-            heuristic_array[i] = (-2*act) + (4*ndh) - ecc + htic # original (1)
-    
+            
+#            heuristic_array[i] = (-2*act) + (4*ndh) - ecc + htic # original (1)
+            heuristic_array[i] = - (act/7) + (ndh/41) - (ecc/15) + htic # original weighted (14)
+#            print(f'{act}|{ndh}|{ecc}|{htic} => {heuristic_array[i]}')
+#            _log([act,ndh,ecc,htic,heuristic_array[i]])
+            
     return heuristic_array
 
 def get_position_of_highest_tile(highest_tile, board):
@@ -179,6 +188,20 @@ def get_position_of_highest_tile(highest_tile, board):
         return [3,3]
     else:
         return None
+
+# def get_manhattan_distance_to_closest_corner_of_highest_tile(board):    
+#     distance = 100 # initialize too big
+#     highest_tile = highest_tile(board)
+
+#     for y in range(4):
+#         for x in range(4):
+#             if _to_val(board[x][y]) == highest_tile:
+#                 # found position of (a) highest_tile
+
+
+
+#     for 
+
 
 def move_possible(move, board):
     return not board_equals(execute_move(move, board), board)
