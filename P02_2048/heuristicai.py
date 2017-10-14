@@ -2,9 +2,9 @@ import random
 import game
 import sys
 
-# Author:				chrn (original by nneonneo)
-# Date:				11.11.2016
-# Description:			The logic of the AI to beat the game.
+# Author:				edualc (original by nneonneo, edited by chrn)
+# Date:				10.10.2017
+# Description:		The logic of the AI to beat the game.
 
 UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
 

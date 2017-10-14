@@ -16,11 +16,13 @@ import os
 import searchai    #for task 3
 import heuristicai #for task 2
 import heuristicai2 #for task 2
-import heuristicai3 #for task 2
+import heuristicai2_weighted #for task 2
+import heuristicai3_depth #for task 2
+import heuristicai4_snake #for task 2
 import csv
 
-current_ai = heuristicai2
-games_to_be_played = 10
+current_ai = heuristicai2_weighted
+games_to_be_played = 40
 games_played = []
 
 def print_board(m):

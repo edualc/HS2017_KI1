@@ -9,22 +9,6 @@ import csv
 # Date:				10.10.2017
 # Description:		The logic of the AI to beat the game.
 
-UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
-
-file_writer = None
-ai_id = 0
-score = 0
-console_logging = False
-
-def find_best_move(board):
-    bestmove = -1    
-	
-	# TODO:
-	# Build a heuristic agent on your own that is much better than the random agent.
-	# Your own agent don't have to beat the game.
-    bestmove = find_best_move_random_agent(board)
-    return bestmove
-
 '''
 1) play 'randomly' with adjusted weight values, one move direction is prohibited
 2) when space gets crowded, try to see which move keeps your board cleanest => which move keeps the crowdedness lowest
@@ -37,6 +21,22 @@ def find_best_move(board):
 8) don't move corner once highest tile is inside a corner
 9) todo: echo stats as csv/log?
 '''
+
+UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
+moves = [UP, RIGHT, DOWN, LEFT]
+goal = [[2, 4, 8, 16], [32, 64, 128, 256], [512, 1024, 2048, 4096], [8192, 16384, 32768, 65536]]
+
+file_writer = None
+ai_id = 0
+score = 0
+console_logging = False
+
+def find_best_move(board):
+    bestmove = -1    
+	
+    bestmove = find_best_move_random_agent(board)
+    return bestmove
+
 def find_best_move_random_agent(board):
     _log_board_state(board)
     
@@ -141,9 +141,7 @@ def build_heuristic_array(move_possible_array, board):
             board_to_check = execute_move(i, board)
             
             act = amount_of_combineable_tiles(i, board)
-            
             ndh = neighbour_difference_heuristic(board_to_check)
-            
             ecc = empty_cells_count(board_to_check)
             
             # can we keep the highest tile in a corner?
@@ -159,19 +157,9 @@ def build_heuristic_array(move_possible_array, board):
             else:
                 htic = 100
                 
-                
-            # scale different heuristics according to the same interval
-            # TODO
-            
-                
             # add heuristics together
-#            heuristic_array[i] = (4*ndh) - ecc + htic # ignore empty cells count (9)
-#            heuristic_array[i] = (4*ndh) - ecc + htic # ignore combineable tiles amount (8)
-#            heuristic_array[i] = (4*ndh) + htic # ignore both ecc and act (10)
-#            heuristic_array[i] = -act + ndh - ecc + htic (11)
-            
-            heuristic_array[i] = (-2*act) + (4*ndh) - ecc + htic # original (1)
-#            heuristic_array[i] = - (act/7) + (ndh/41) - (ecc/15) + htic # original weighted (14)
+#            heuristic_array[i] = (-2*act) + (4*ndh) - ecc + htic # original (1)
+            heuristic_array[i] = - (act/7) + (ndh/41) - (ecc/15) + htic # original weighted (14)
 #            print(f'{act}|{ndh}|{ecc}|{htic} => {heuristic_array[i]}')
 #            _log([act,ndh,ecc,htic,heuristic_array[i]])
             
@@ -188,20 +176,6 @@ def get_position_of_highest_tile(highest_tile, board):
         return [3,3]
     else:
         return None
-
-# def get_manhattan_distance_to_closest_corner_of_highest_tile(board):    
-#     distance = 100 # initialize too big
-#     highest_tile = highest_tile(board)
-
-#     for y in range(4):
-#         for x in range(4):
-#             if _to_val(board[x][y]) == highest_tile:
-#                 # found position of (a) highest_tile
-
-
-
-#     for 
-
 
 def move_possible(move, board):
     return not board_equals(execute_move(move, board), board)

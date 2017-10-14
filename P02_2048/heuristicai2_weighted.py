@@ -5,9 +5,9 @@ import time
 import math
 import csv
 
-# Author:				chrn (original by nneonneo)
-# Date:				11.11.2016
-# Description:			The logic of the AI to beat the game.
+# Author:				edualc (original by nneonneo, edited by chrn)
+# Date:				10.10.2017
+# Description:		The logic of the AI to beat the game.
 
 UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
 
@@ -15,7 +15,6 @@ file_writer = None
 ai_id = 0
 score = 0
 console_logging = False
-look_up_depth = 3
 
 def find_best_move(board):
     bestmove = -1    
@@ -37,10 +36,6 @@ def find_best_move(board):
 7) Heuristic: the bigger the tile, the more important it is to keep it close to higher tiles
 8) don't move corner once highest tile is inside a corner
 9) todo: echo stats as csv/log?
-    
-10) try looking at more than just 4 moves, recursively
-11) have no more than 4 empty spaces
-    
 '''
 def find_best_move_random_agent(board):
     _log_board_state(board)
@@ -53,16 +48,14 @@ def find_best_move_random_agent(board):
     '''
     What are the scores for each move?
     '''
-    heuristic_array = adjust_for_highest_tile_in_corner(move_possible_array, board, build_heuristic_array_recursively(move_possible_array, board, look_up_depth))
-#    print(heuristic_array)
-    
+    heuristic_array = build_heuristic_array(move_possible_array, board)
+        
     '''
     Choose the best move out of all possible
     '''
     best_move = get_best_move(heuristic_array)
-    new_board = execute_move(best_move, board)
     
-    _log([ai_id, empty_cells_count(new_board), neighbour_difference_heuristic(new_board), highest_tile(new_board), highest_tile_in_corner_heuristic(new_board), best_move, score, amount_of_combineable_tiles(best_move, board), move_possible_array, heuristic_array]) # logging
+    _log([ai_id, empty_cells_count(board), neighbour_difference_heuristic(board), highest_tile(board), highest_tile_in_corner_heuristic(board), best_move, score, amount_of_combineable_tiles(best_move, board), move_possible_array, heuristic_array]) # logging
     return best_move
         
 def execute_move(move, board):
@@ -147,55 +140,42 @@ def build_heuristic_array(move_possible_array, board):
         if move_possible_array[i] > 0:
             board_to_check = execute_move(i, board)
             
-            empty_cells_heuristic = 2**(empty_cells_count(board_to_check) - 8) - 1
-#            empty_cells_heuristic = 0
-            neighbour_exponent_heuristic = neighbour_difference_heuristic(board_to_check)
-            combineable_tiles_heuristic = amount_of_combineable_tiles(i, board)
+            act = amount_of_combineable_tiles(i, board)
             
-#            print(f'+{neighbour_exponent_heuristic} | +{highest_tile_in_corner_heuristic} | +{combineable_tiles_heuristic} | -{empty_cells_heuristic}')
+            ndh = neighbour_difference_heuristic(board_to_check)
             
+            ecc = empty_cells_count(board_to_check)
+            
+            # can we keep the highest tile in a corner?
+            if keep_highest_tile_in_corner(i, board):
+                # find positions of highest tile to compare (can we keep the highest tile at the same spot?)
+                htlp = get_position_of_highest_tile(highest_tile(board), board)
+                new_htlp = get_position_of_highest_tile(highest_tile(board_to_check), board_to_check)
+                
+                if (htlp == new_htlp) or (htlp is None) or (new_htlp is None):
+                    htic = 0                    
+                else:
+                    htic = 100
+            else:
+                htic = 100
+                
+                
+            # scale different heuristics according to the same interval
+            # TODO
+            
+                
             # add heuristics together
-            heuristic_array[i] = empty_cells_heuristic + neighbour_exponent_heuristic - combineable_tiles_heuristic
-    
-    return heuristic_array
-
-def build_heuristic_array_recursively(move_possible_array, board, depth):
-    if depth == 1:
-        return build_heuristic_array(move_possible_array, board)
-    else:
-        heuristic_array = [9999, 9999, 9999, 9999]
-        for i in range(4):
-            if move_possible_array[i] > 0:
-                new_board = execute_move(i, board)                
-                heuristic_array[i] = min(build_heuristic_array_recursively(get_possible_moves(new_board), new_board, depth - 1))
+#            heuristic_array[i] = (4*ndh) - ecc + htic # ignore empty cells count (9)
+#            heuristic_array[i] = (4*ndh) - ecc + htic # ignore combineable tiles amount (8)
+#            heuristic_array[i] = (4*ndh) + htic # ignore both ecc and act (10)
+#            heuristic_array[i] = -act + ndh - ecc + htic (11)
             
-        return heuristic_array
-    
-def adjust_for_highest_tile_in_corner(move_possible_array, board, heuristic_array):
-    for i in range(4):
-        if move_possible_array[i] > 0:
-            new_board = execute_move(i, board)
-
-            highest_tile_in_corner_heuristic = evaluate_highest_tile_in_corner(board, new_board, i)
-            heuristic_array[i] += highest_tile_in_corner_heuristic
-    
+#            heuristic_array[i] = (-2*act) + (4*ndh) - ecc + htic # original (1)
+            heuristic_array[i] = - (act/7) + (ndh/41) - (ecc/15) + htic # original weighted (14)
+#            print(f'{act}|{ndh}|{ecc}|{htic} => {heuristic_array[i]}')
+#            _log([act,ndh,ecc,htic,heuristic_array[i]])
+            
     return heuristic_array
-    
-def evaluate_highest_tile_in_corner(board, new_board, move):
-    # can we keep the highest tile in a corner?
-    if keep_highest_tile_in_corner(move, board):
-        # find positions of highest tile to compare (can we keep the highest tile at the same spot?)
-        htlp = get_position_of_highest_tile(highest_tile(board), board)
-        new_htlp = get_position_of_highest_tile(highest_tile(new_board), new_board)
-        
-        if (htlp == new_htlp) or (htlp is None) or (new_htlp is None):
-            htic = 0                    
-        else:
-            htic = 500
-    else:
-        htic = 1000
-        
-    return htic
 
 def get_position_of_highest_tile(highest_tile, board):
     if _to_val(board[0][0]) == highest_tile:
@@ -208,6 +188,20 @@ def get_position_of_highest_tile(highest_tile, board):
         return [3,3]
     else:
         return None
+
+# def get_manhattan_distance_to_closest_corner_of_highest_tile(board):    
+#     distance = 100 # initialize too big
+#     highest_tile = highest_tile(board)
+
+#     for y in range(4):
+#         for x in range(4):
+#             if _to_val(board[x][y]) == highest_tile:
+#                 # found position of (a) highest_tile
+
+
+
+#     for 
+
 
 def move_possible(move, board):
     return not board_equals(execute_move(move, board), board)
@@ -303,9 +297,6 @@ def neighbour_difference_heuristic(board):
             heuristic_score += current_tile_score
             heuristics_board[x][y] = current_tile_score
             
-#    print_board(heuristics_board)
-    return heuristic_score
-
 #    print_board(heuristics_board)
     return heuristic_score
 

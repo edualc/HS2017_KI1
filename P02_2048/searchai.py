@@ -1,8 +1,6 @@
 import random
 import game
 import sys
-from multiprocessing import Pool
-import itertools
 
 # Author:      chrn (original by nneonneo)
 # Date:        11.11.2016
@@ -17,16 +15,13 @@ def find_best_move(board):
     bestmove = -1
     UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
     move_args = [UP,DOWN,LEFT,RIGHT]
-    pool = Pool()
     
-    result = pool.map(func_star, itertools.izip(move_args, itertools.repeat(board)))
+    result = [score_toplevel_move(i, board) for i in range(len(move_args))]
+    
     bestmove = result.index(max(result))
-    
     for m in move_args:
         print(m)
         print(result[m])
-    pool.close()
-    pool.join()
     
     return bestmove
     
@@ -70,10 +65,3 @@ def board_equals(board, newboard):
     Check if two boards are equal
     """
     return  (newboard == board).all()  
-    
-def func_star(a_b):
-    """
-	Helper Method to split the programm in more processes.
-	Needed to handle more than one parameter.
-    """
-    return score_toplevel_move (*a_b)
