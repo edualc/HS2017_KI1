@@ -5,6 +5,8 @@ import time
 import math
 import csv
 
+import util
+
 # Author:				edualc (original by nneonneo, edited by chrn)
 # Date:				10.10.2017
 # Description:		The logic of the AI to beat the game.
@@ -40,92 +42,25 @@ def find_best_move(board):
 def find_best_move_random_agent(board):
     _log_board_state(board)
     
-    '''
-    Which moves are possible? 1 for possible, 0 for not possible
-    '''
+    '''Which moves are possible? 1 for possible, 0 for not possible'''
     move_possible_array = get_possible_moves(board)
             
-    '''
-    What are the scores for each move?
-    '''
+    '''What are the scores for each move?'''
     heuristic_array = build_heuristic_array(move_possible_array, board)
         
-    '''
-    Choose the best move out of all possible
-    '''
-    best_move = get_best_move(heuristic_array)
+    '''Choose the best move out of all possible'''
+    best_move = util.index_min(heuristic_array)
     
     _log([ai_id, empty_cells_count(board), neighbour_difference_heuristic(board), highest_tile(board), highest_tile_in_corner_heuristic(board), best_move, score, amount_of_combineable_tiles(best_move, board), move_possible_array, heuristic_array]) # logging
     return best_move
         
-def execute_move(move, board):
-    """
-    move and return the grid without a new random tile 
-	It won't affect the state of the game in the browser.
-    """
-
-    if move == UP:
-        return game.merge_up(board)
-    elif move == DOWN:
-        return game.merge_down(board)
-    elif move == LEFT:
-        return game.merge_left(board)
-    elif move == RIGHT:
-        return game.merge_right(board)
-    else:
-        sys.exit("No valid move")
-		
-def board_equals(board, newboard):
-    """
-    Check if two boards are equal
-    """
-    return  (newboard == board).all()  
-
-def print_board(board):
-    for row in board:
-        for cell in row:
-            print('%8d' % cell, end=' ')
-        print()
-
-def _to_val(cell):
-    if cell == 0: return 0
-    return cell
-
-def to_val(board):
-    return [[_to_val(cell) for cell in row] for row in board]
-
-def _to_score(cell):
-    if cell <= 1:
-        return 0
-    return (cell-1) * (2**cell)
-
-def to_score(board):
-    return [[_to_score(cell) for cell in row] for row in board]
-
-    '''
-    #=============
-    # Own Methods
-    #=============
-    '''
 def empty_cells_count(board):
-    count = 0
-    for row in board:
-        for cell in row:
-            if _to_val(cell) == 0:
-                count += 1
-    return count
-
-def get_best_move(heuristic_array):
-    best_move = 0
-    for i in range(4):
-        if heuristic_array[i] < heuristic_array[best_move]:
-            best_move = i
-    return best_move
+    return board.count(0)
 
 def get_possible_moves(board):
     move_possible_array = [0, 0, 0, 0]
     
-    for i in range(0,4):
+    for i in range(4):
         if move_possible(i, board):
             move_possible_array[i] = 1
             
