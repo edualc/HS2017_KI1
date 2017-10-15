@@ -21,8 +21,8 @@ import heuristicai3_depth #for task 2
 import heuristicai4_snake #for task 2
 import csv
 
-current_ai = heuristicai2_weighted
-games_to_be_played = 40
+current_ai = heuristicai4_snake
+games_to_be_played = 1
 games_played = []
 
 def print_board(m):
