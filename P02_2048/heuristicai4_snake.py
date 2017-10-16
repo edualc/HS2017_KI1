@@ -26,7 +26,7 @@ UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
 ai_id = 0
 console_logging = False
 file_writer = None
-goal = [[2, 4, 8, 16], [32, 64, 128, 256], [512, 1024, 2048, 4096], [8192, 16384, 32768, 65536]]
+goal = np.array([[65536, 32768, 16384, 8192], [512, 1024, 2048, 4096], [256, 128, 64, 32], [2, 4, 8, 16]])
 score = 0
 
 '''========================================================================================
@@ -94,22 +94,15 @@ def heuristics_empty_cells_count(board):
     return util.cell_of_type_count(0, board)
 
 def heuristics_highest_tile_in_corner(board, board_to_check):
-    # can we keep the highest tile in a corner?
-    if util.is_highest_tile_in_corner(board_to_check):
-        # is the highest tile in the same corner after move?
-        htlp = util.get_position_of_highest_tile(board)
-        new_htlp = util.get_position_of_highest_tile(board_to_check)
+    htic = 100
 
-        if (htlp == new_htlp) or (htlp is None) or (new_htlp is None):
-            htic = 0                    
-        else:
-            htic = 100
-    else:
-        htic = 100
+    if util.get_position_of_highest_tile(board_to_check) == [0, 0]:
+        htic = 0
+
     return htic
 
 def heuristics_monotonous_row(board):
-    return 0
+    return sum(sum(board * goal))
 
 def heuristics_neighbour_difference(board):
     heuristic_score = 0 # initialize score
@@ -169,9 +162,18 @@ def build_heuristic_array(move_possible_array, board):
             htic = heuristics_highest_tile_in_corner(board, board_to_check)
                 
             # add heuristics together
-            heuristic_array[i] = (-2*act) + (4*ndh) - ecc + htic # => original (1)
-            # heuristic_array[i] = - (act/7) + 3*(ndh/41) - (ecc/15) + 5 * htic # => original weighted (14)
-            
+            # heuristic_array[i] = (-2*act) + (4*ndh) - ecc - 50 * (heuristics_monotonous_row(board_to_check) / heuristics_monotonous_row(board)) # (1)
+            # heuristic_array[i] = - (act/7) + 3*(ndh/41) - (ecc/15) + htic - heuristics_monotonous_row(board_to_check) / heuristics_monotonous_row(board) # (2) weighted
+            # heuristic_array[i] = - 2*(act/7) + (ndh/41) - 4*(ecc/15) + htic - heuristics_monotonous_row(board_to_check) / heuristics_monotonous_row(board) # (3) weighted2
+            # heuristic_array[i] = - (act/7) + 2*(ndh/41) - (ecc/15) + htic - 2 * heuristics_monotonous_row(board_to_check) / heuristics_monotonous_row(board) # (4) weighted3
+            # heuristic_array[i] = 2*(ndh/41) + htic - 2 * heuristics_monotonous_row(board_to_check) / heuristics_monotonous_row(board) # (5) weighted4
+            heuristic_array[i] = (-2*act) + (4*ndh) - ecc - 100 * (heuristics_monotonous_row(board_to_check) / heuristics_monotonous_row(board)) # (6) weighted5
+
+            # TODO!
+            # ==============================
+            # - each heuristic on its own with the monotonous row
+            # ==============================
+
     return heuristic_array
 
 def _evaluate_tile_ratio(cell, neighbour_cell):

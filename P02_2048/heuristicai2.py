@@ -26,7 +26,6 @@ UP, DOWN, LEFT, RIGHT = 0, 1, 2, 3
 ai_id = 0
 console_logging = False
 file_writer = None
-goal = [[2, 4, 8, 16], [32, 64, 128, 256], [512, 1024, 2048, 4096], [8192, 16384, 32768, 65536]]
 score = 0
 
 '''========================================================================================
@@ -107,9 +106,6 @@ def heuristics_highest_tile_in_corner(board, board_to_check):
     else:
         htic = 100
     return htic
-
-def heuristics_monotonous_row(board):
-    return 0
 
 def heuristics_neighbour_difference(board):
     heuristic_score = 0 # initialize score

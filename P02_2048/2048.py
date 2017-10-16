@@ -22,7 +22,7 @@ import heuristicai4_snake #for task 2
 import csv
 
 current_ai = heuristicai4_snake
-games_to_be_played = 1
+games_to_be_played = 10
 games_played = []
 
 def print_board(m):
