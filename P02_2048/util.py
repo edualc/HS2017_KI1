@@ -114,3 +114,6 @@ def get_position_of_highest_tile(board):
         return [3, 3]
     else:
         return None
+    
+def round_nearest(x, a):
+    return round(round(x / a) * a, -int(math.floor(math.log10(a))))

@@ -28,11 +28,17 @@ console_logging = False
 file_writer = None
 goal = np.array([[65536, 32768, 16384, 8192], [512, 1024, 2048, 4096], [256, 128, 64, 32], [2, 4, 8, 16]])
 score = 0
+move_count = 0
+coeff = [-1, 3, -1, 3, -1]
 
 '''========================================================================================
     Methods used directly by 2048.py
 ========================================================================================'''
 def find_best_move(board):
+    global move_count
+    global coeff
+    global score
+
     '''Which moves are possible? 1 for possible, 0 for not possible'''
     possible_moves_array = util.build_possible_moves_list(board)
     if console_logging:  
@@ -43,8 +49,10 @@ def find_best_move(board):
         
     '''Choose the best move out of all possible'''
     best_move = util.index_min(heuristic_array)
-    
-    log.log(file_writer, [ai_id, heuristics_empty_cells_count(board), heuristics_neighbour_difference(board), util.highest_tile(board), heuristics_highest_tile_in_corner(board, util.execute_move(best_move, board)), best_move, score, heuristics_combineable_cells_count(best_move, board), possible_moves_array, heuristic_array]) # logging
+
+    handle_logging(board, util.execute_move(best_move, board), best_move)
+
+    move_count += + 1
     return best_move
 
 '''========================================================================================
@@ -88,21 +96,26 @@ def heuristics_combineable_cells_count(move, board):
                 # abxx
                 combineable_tiles_count += 1
                 
-    return combineable_tiles_count
+    # return combineable_tiles_count
+    return util.round_nearest(combineable_tiles_count/7, 0.01)
 
 def heuristics_empty_cells_count(board):
-    return util.cell_of_type_count(0, board)
+    # return util.cell_of_type_count(0, board)
+    return util.round_nearest(util.cell_of_type_count(0, board) / 15, 0.01)
 
 def heuristics_highest_tile_in_corner(board, board_to_check):
-    htic = 100
+    # htic = 100
+    htic = 1
 
     if util.get_position_of_highest_tile(board_to_check) == [0, 0]:
         htic = 0
 
-    return htic
+    # return htic
+    return util.round_nearest(htic, 0.01)
 
 def heuristics_monotonous_row(board):
-    return sum(sum(board * goal))
+    # return sum(sum(board * goal))
+    return util.round_nearest(sum(sum(board * goal)), 0.01)
 
 def heuristics_neighbour_difference(board):
     heuristic_score = 0 # initialize score
@@ -142,12 +155,43 @@ def heuristics_neighbour_difference(board):
     
     if console_logging:
         print(f'neighbour_difference_board: {neighbour_difference_board}')
-    return heuristic_score
+    # return heuristic_score
+    return util.round_nearest(heuristic_score / 41, 0.01)
 
 '''========================================================================================
     Helper methods connected to heuristics used
     (general helper methods can be found in util.py)
 ========================================================================================'''
+
+def handle_logging(board, best_board, best_move):
+    content = {
+        'ai_id': ai_id,
+        'move_count': move_count,
+        'heuristics_empty_cells_count': heuristics_empty_cells_count(best_board),
+        'heuristics_neighbour_difference': heuristics_neighbour_difference(best_board),
+        'highest_tile': int(util.highest_tile(best_board)),
+        'heuristics_highest_tile_in_corner': heuristics_highest_tile_in_corner(board, best_board),
+        'heuristics_monotonous_row': int(util.round_nearest(heuristics_monotonous_row(best_board)/(heuristics_monotonous_row(board)), 0.01)),
+        'best_move': best_move,
+        'score': score,
+        'heuristics_combineable_cells_count': heuristics_combineable_cells_count(best_move, board),
+        'coefficient_0_act': coeff[0],
+        'coefficient_1_ndh': coeff[1],
+        'coefficient_2_ecc': coeff[2],
+        'coefficient_3_htic': coeff[3],
+        'coefficient_4_morow': coeff[4]
+    }
+
+    log.elastic_post(content)
+
+    log_list = []
+    for key, value in content.items():
+        log_list.append(value)
+
+    # print(log_list)
+
+    log.log(file_writer, log_list)
+    # log.log(file_writer, [ai_id, heuristics_empty_cells_count(board), heuristics_neighbour_difference(board), util.highest_tile(board), heuristics_highest_tile_in_corner(board, util.execute_move(best_move, board)), best_move, score, heuristics_combineable_cells_count(best_move, board), possible_moves_array, heuristic_array]) # logging    
 
 def build_heuristic_array(move_possible_array, board):
     heuristic_array = util.build_list(math.inf, 4)
@@ -161,13 +205,16 @@ def build_heuristic_array(move_possible_array, board):
             ecc = heuristics_empty_cells_count(board_to_check)
             htic = heuristics_highest_tile_in_corner(board, board_to_check)
                 
+            # heuristic_array[i] = coeff[0] * act/7 + coeff[1] * (ndh/41) + coeff[2] * (ecc/15) + coeff[3] * htic + coeff[4] * (heuristics_monotonous_row(board_to_check) / heuristics_monotonous_row(board))
+            heuristic_array[i] = coeff[0] * act + coeff[1] * ndh + coeff[2] * ecc + coeff[3] * htic + coeff[4] * (heuristics_monotonous_row(board_to_check) / heuristics_monotonous_row(board))
+
             # add heuristics together
             # heuristic_array[i] = (-2*act) + (4*ndh) - ecc - 50 * (heuristics_monotonous_row(board_to_check) / heuristics_monotonous_row(board)) # (1)
             # heuristic_array[i] = - (act/7) + 3*(ndh/41) - (ecc/15) + htic - heuristics_monotonous_row(board_to_check) / heuristics_monotonous_row(board) # (2) weighted
             # heuristic_array[i] = - 2*(act/7) + (ndh/41) - 4*(ecc/15) + htic - heuristics_monotonous_row(board_to_check) / heuristics_monotonous_row(board) # (3) weighted2
             # heuristic_array[i] = - (act/7) + 2*(ndh/41) - (ecc/15) + htic - 2 * heuristics_monotonous_row(board_to_check) / heuristics_monotonous_row(board) # (4) weighted3
             # heuristic_array[i] = 2*(ndh/41) + htic - 2 * heuristics_monotonous_row(board_to_check) / heuristics_monotonous_row(board) # (5) weighted4
-            heuristic_array[i] = (-2*act) + (4*ndh) - ecc - 100 * (heuristics_monotonous_row(board_to_check) / heuristics_monotonous_row(board)) # (6) weighted5
+            # heuristic_array[i] = (-2*act) + (4*ndh) - ecc - 100 * (heuristics_monotonous_row(board_to_check) / heuristics_monotonous_row(board)) # (6) weighted5
 
             # TODO!
             # ==============================
