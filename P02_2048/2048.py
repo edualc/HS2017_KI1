@@ -14,17 +14,21 @@ import time
 import datetime
 import os
 import searchai    #for task 3
-import heuristicai #for task 2
 import heuristicai2 #for task 2
 import heuristicai2_weighted #for task 2
-import heuristicai3_depth #for task 2
 import heuristicai4_snake #for task 2
 import csv
-import log
 
-current_ai = heuristicai4_snake
-games_to_be_played = 25
 games_played = []
+
+'''========================================================================================
+    AI Configuration & Logging Behaviour
+========================================================================================'''
+current_ai = heuristicai4_snake
+games_to_be_played = 10
+log_each_game_as_csv = True
+log_totals_as_csv = True
+log_elastic = False
 
 def print_board(m):
     for row in m:
@@ -69,7 +73,7 @@ def play_game(gamectrl):
         move = find_best_move(board)
         if move < 0:
             break
-#        print("%010.6f: Score %d, Move %d: %s" % (time.time() - start, gamectrl.get_score(), moveno, movename(move)))
+        # print("%010.6f: Score %d, Move %d: %s" % (time.time() - start, gamectrl.get_score(), moveno, movename(move)))
         current_ai.score = gamectrl.get_score()
         gamectrl.execute_move(move)
 
@@ -116,33 +120,50 @@ def main(argv):
     if gamectrl.get_status() == 'ended':
         gamectrl.restart_game()
 
+    '''========================================================================================
+        Start playing 2048
+    ========================================================================================'''
+
     for i in range(games_to_be_played):
-        '''
-        Initialize File Writer
-        '''
-        file_name = 'log/' + timestamp() + '_' + current_ai.__name__ +'.csv'
-        with open(file_name, 'w', newline='') as csv_file:
-            file_writer = csv.writer(csv_file)
-            initialize_current_ai_globals(file_writer)
-            
-            file_writer.writerow(['ai_id','move_count','heuristics_empty_cells_count','heuristics_neighbour_difference','highest_tile','heuristics_highest_tile_in_corner','heuristics_monotonous_row','best_move','score','heuristics_combineable_cells_count','coefficient_0_act','coefficient_1_ndh','coefficient_2_ecc','coefficient_3_htic','coefficient_4_morow'])
-            # file_writer.writerow(['id','empty_cells_count','neighbour_difference_heuristic','highest_tile','highest_tile_in_corner_heuristic','best_move','score','amount_of_combineable_tiles','move_possible_array','heuristic_array'])
-        
+        if log_each_game_as_csv:
+            '''Log Each Game'''
+            file_name = 'log/' + timestamp() + '_' + current_ai.__name__ +'.csv'
+            with open(file_name, 'w', newline='') as csv_file:
+                file_writer = csv.writer(csv_file)
+                current_ai.print_csv_header(file_writer)
+
+                '''Initialize global variables for current_ai'''
+                initialize_current_ai_globals(file_writer)
+
+                '''Play full game and reset'''
+                play_game(gamectrl)
+                gamectrl.restart_game()
+
+        else:
+            '''Initialize global variables for current_ai'''
+            initialize_current_ai_globals(None)
+
+            '''Play full game and reset'''
             play_game(gamectrl)
             gamectrl.restart_game()
-    
-    # log totals (score + maxval)
-    file_name = 'log/' + timestamp() + '_' + current_ai.__name__ + '_totals.csv'
-    with open(file_name, 'w', newline='') as csv_file2:
-        csv_writer2 = csv.writer(csv_file2)
-        for line in games_played:
-            csv_writer2.writerow(line)
+
+    '''Log Totals'''
+    if log_totals_as_csv:
+        file_name = 'log/' + timestamp() + '_' + current_ai.__name__ + '_totals.csv'
+        with open(file_name, 'w', newline='') as csv_file2:
+            csv_writer2 = csv.writer(csv_file2)
+            for line in games_played:
+                csv_writer2.writerow(line)
 
 def initialize_current_ai_globals(file_writer):
-    current_ai.file_writer = file_writer
+    current_ai.ai_id = timestamp() # identify for logging
     current_ai.move_count = 0
     current_ai.score = 0
-    current_ai.ai_id = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S') # identify for logging
+
+    current_ai.file_writer = file_writer
+
+    current_ai.log_csv = log_each_game_as_csv
+    current_ai.log_elastic = log_elastic
 
 def timestamp():
     return datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d_%H%M%S')

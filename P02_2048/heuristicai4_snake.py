@@ -30,6 +30,8 @@ goal = np.array([[65536, 32768, 16384, 8192], [512, 1024, 2048, 4096], [256, 128
 score = 0
 move_count = 0
 coeff = [-1, 3, -1, 3, -1]
+log_elastic = False
+log_csv = False
 
 '''========================================================================================
     Methods used directly by 2048.py
@@ -50,7 +52,7 @@ def find_best_move(board):
     '''Choose the best move out of all possible'''
     best_move = util.index_min(heuristic_array)
 
-    handle_logging(board, util.execute_move(best_move, board), best_move)
+    handle_logging(board, util.execute_move(best_move, board), best_move, heuristic_array)
 
     move_count += + 1
     return best_move
@@ -163,7 +165,12 @@ def heuristics_neighbour_difference(board):
     (general helper methods can be found in util.py)
 ========================================================================================'''
 
-def handle_logging(board, best_board, best_move):
+def handle_logging(board, best_board, best_move, heuristic_array):
+    global file_writer
+
+    if not log_elastic and not log_csv:
+        return
+
     content = {
         'ai_id': ai_id,
         'move_count': move_count,
@@ -175,6 +182,7 @@ def handle_logging(board, best_board, best_move):
         'best_move': best_move,
         'score': score,
         'heuristics_combineable_cells_count': heuristics_combineable_cells_count(best_move, board),
+        'heuristics_total': heuristic_array[best_move],
         'coefficient_0_act': coeff[0],
         'coefficient_1_ndh': coeff[1],
         'coefficient_2_ecc': coeff[2],
@@ -182,16 +190,15 @@ def handle_logging(board, best_board, best_move):
         'coefficient_4_morow': coeff[4]
     }
 
-    log.elastic_post(content)
+    if log_elastic:
+        log.elastic_post(content)
 
-    log_list = []
-    for key, value in content.items():
-        log_list.append(value)
+    if log_csv:
+        log_list = []
+        for key, value in content.items():
+            log_list.append(value)
 
-    # print(log_list)
-
-    log.log(file_writer, log_list)
-    # log.log(file_writer, [ai_id, heuristics_empty_cells_count(board), heuristics_neighbour_difference(board), util.highest_tile(board), heuristics_highest_tile_in_corner(board, util.execute_move(best_move, board)), best_move, score, heuristics_combineable_cells_count(best_move, board), possible_moves_array, heuristic_array]) # logging    
+        file_writer.writerow(log_list)
 
 def build_heuristic_array(move_possible_array, board):
     heuristic_array = util.build_list(math.inf, 4)
@@ -234,3 +241,23 @@ def _evaluate_tile_ratio(cell, neighbour_cell):
     ratio = current_tile_exp - neighbour_tile_exp
 
     return math.fabs(ratio)
+
+def print_csv_header(file_writer):
+    file_writer.writerow([
+        'ai_id',
+        'move_count',
+        'heuristics_empty_cells_count',
+        'heuristics_neighbour_difference',
+        'highest_tile',
+        'heuristics_highest_tile_in_corner',
+        'heuristics_monotonous_row',
+        'best_move',
+        'score',
+        'heuristics_combineable_cells_count',
+        'heuristics_total',
+        'coefficient_0_act',
+        'coefficient_1_ndh',
+        'coefficient_2_ecc',
+        'coefficient_3_htic',
+        'coefficient_4_morow'
+    ])
