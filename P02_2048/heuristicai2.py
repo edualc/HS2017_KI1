@@ -9,7 +9,7 @@ import util
 import log
 import numpy as np
 
-# Author:				edualc (original by nneonneo, edited by chrn)
+# Author:			edualc (original by nneonneo, edited by chrn)
 # Date:				10.10.2017
 # Description:		The logic of the AI to beat the game.
 

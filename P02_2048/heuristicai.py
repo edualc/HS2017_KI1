@@ -2,7 +2,7 @@ import random
 import game
 import sys
 
-# Author:				edualc (original by nneonneo, edited by chrn)
+# Author:			edualc (original by nneonneo, edited by chrn)
 # Date:				10.10.2017
 # Description:		The logic of the AI to beat the game.
 

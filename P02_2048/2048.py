@@ -24,10 +24,10 @@ games_played = []
 '''========================================================================================
     AI Configuration & Logging Behaviour
 ========================================================================================'''
-current_ai = heuristicai4_snake
+current_ai = searchai
 games_to_be_played = 10
-log_each_game_as_csv = True
-log_totals_as_csv = True
+log_each_game_as_csv = False
+log_totals_as_csv = False
 log_elastic = False
 
 def print_board(m):
@@ -73,7 +73,7 @@ def play_game(gamectrl):
         move = find_best_move(board)
         if move < 0:
             break
-        # print("%010.6f: Score %d, Move %d: %s" % (time.time() - start, gamectrl.get_score(), moveno, movename(move)))
+        print("%010.6f: Score %d, Move %d: %s" % (time.time() - start, gamectrl.get_score(), moveno, movename(move)))
         current_ai.score = gamectrl.get_score()
         gamectrl.execute_move(move)
 
@@ -156,7 +156,10 @@ def main(argv):
                 csv_writer2.writerow(line)
 
 def initialize_current_ai_globals(file_writer):
-    current_ai.ai_id = timestamp() # identify for logging
+    if current_ai.__name__ == 'searchai':
+        current_ai.ai_id = 'expectimax_' + timestamp()
+    else:
+        current_ai.ai_id = 'heuristic_' + timestamp() # identify for logging
     current_ai.move_count = 0
     current_ai.score = 0
 
