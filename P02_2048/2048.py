@@ -13,6 +13,7 @@ from __future__ import print_function
 import time
 import datetime
 import os
+import searchai_lauenchr    #for task 3
 import searchai    #for task 3
 import heuristicai2 #for task 2
 import heuristicai2_weighted #for task 2
@@ -73,7 +74,7 @@ def play_game(gamectrl):
         move = find_best_move(board)
         if move < 0:
             break
-        print("%010.6f: Score %d, Move %d: %s" % (time.time() - start, gamectrl.get_score(), moveno, movename(move)))
+        # print("%010.6f: Score %d, Move %d: %s" % (time.time() - start, gamectrl.get_score(), moveno, movename(move)))
         current_ai.score = gamectrl.get_score()
         gamectrl.execute_move(move)
 
