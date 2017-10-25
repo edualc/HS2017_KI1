@@ -24,7 +24,7 @@ games_played = []
 '''========================================================================================
     AI Configuration & Logging Behaviour
 ========================================================================================'''
-current_ai = searchai
+current_ai = heuristicai4_snake
 games_to_be_played = 10
 log_each_game_as_csv = False
 log_totals_as_csv = False
