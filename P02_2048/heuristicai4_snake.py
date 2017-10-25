@@ -54,7 +54,7 @@ def find_best_move(board):
 
     handle_logging(board, util.execute_move(best_move, board), best_move, heuristic_array)
 
-    move_count += + 1
+    move_count += 1
     return best_move
 
 '''========================================================================================

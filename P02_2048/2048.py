@@ -14,6 +14,7 @@ import time
 import datetime
 import os
 import searchai_lauenchr    #for task 3
+import searchai_lauenchr2    #for task 3
 import searchai    #for task 3
 import heuristicai2 #for task 2
 import heuristicai2_weighted #for task 2
@@ -25,11 +26,11 @@ games_played = []
 '''========================================================================================
     AI Configuration & Logging Behaviour
 ========================================================================================'''
-current_ai = searchai
-games_to_be_played = 20
+current_ai = searchai_lauenchr2
+games_to_be_played = 10
 log_each_game_as_csv = False
 log_totals_as_csv = False
-log_elastic = False
+log_elastic = True
 
 def print_board(m):
     for row in m:
