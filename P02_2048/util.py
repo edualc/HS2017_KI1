@@ -63,7 +63,6 @@ def build_list_2d(content, x, y):
 def build_list(content, x):
     return [content for x_coord in range(x)]
 
-
 def cell_of_type_count(cell_val, board):
     cell_count = 0
 
@@ -117,3 +116,4 @@ def get_position_of_highest_tile(board):
     
 def round_nearest(x, a):
     return round(round(x / a) * a, -int(math.floor(math.log10(a))))
+

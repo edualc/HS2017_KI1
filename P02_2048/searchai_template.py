@@ -59,9 +59,8 @@ def score_toplevel_move(move, board):
         return 0
 
     expectimax_score = expectimax_calc(board_to_check, board, 0, 0)
-    htic = heuristics_highest_tile_in_corner(board_to_check)
 
-    return expectimax_score + coeff[3] * htic
+    return expectimax_score
     
 def expectimax_calc(board_to_check, old_board, depth, isChance):
     # TODO: kann man bei der Suche abbrechen, :higest_tile aus der Ecke getrieben wird?
