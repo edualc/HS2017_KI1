@@ -24,6 +24,35 @@ CHANCE_4 = 0.1
 
 '''
 TODO: "Gewichtete" Heuristik ACT (grosse tiles mergbar priorisieren!)
+
+Evaluation =
+    128 (Constant)
+    + (Number of Spaces x 128)
+    + Sum of faces adjacent to a space { (1/face) x 4096 }
+    + Sum of other faces { log(face) x 4 }
+    + (Number of possible next moves x 256)
+    + (Number of aligned values x 2)
+Evaluation Details
+
+128 (Constant)
+This is a constant, used as a base-line and for other uses like testing.
+
++ (Number of Spaces x 128)
+More spaces makes the state more flexible, we multiply by 128 (which is the median) since a grid filled with 128 faces is an optimal impossible state.
+
++ Sum of faces adjacent to a space { (1/face) x 4096 }
+Here we evaluate faces that have the possibility to getting to merge, by evaluating them backwardly, tile 2 become of value 2048, while tile 2048 is evaluated 2.
+
++ Sum of other faces { log(face) x 4 }
+In here we still need to check for stacked values, but in a lesser way that doesn't interrupt the flexibility parameters, so we have the sum of { x in [4,44] }.
+
++ (Number of possible next moves x 256)
+A state is more flexible if it has more freedom of possible transitions.
+
++ (Number of aligned values x 2)
+This is a simplified check of the possibility of having merges within that state, without making a look-ahead.
+
+Note: The constants can be tweaked..
 '''
 
 goal = np.array([[65536, 32768, 16384, 8192], [512, 1024, 2048, 4096], [256, 128, 64, 32], [2, 4, 8, 16]])

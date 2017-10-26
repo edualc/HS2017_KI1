@@ -26,11 +26,11 @@ games_played = []
 '''========================================================================================
     AI Configuration & Logging Behaviour
 ========================================================================================'''
-current_ai = searchai_lehmacl1
+current_ai = searchai_lauenchr2
 games_to_be_played = 10
 log_each_game_as_csv = False
 log_totals_as_csv = False
-log_elastic = False
+log_elastic = True
 
 def print_board(m):
     for row in m:
