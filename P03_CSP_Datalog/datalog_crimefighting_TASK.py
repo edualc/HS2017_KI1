@@ -22,25 +22,25 @@ pyDatalog.create_terms('knows','has_link','many_more_needed')
 pyDatalog.clear()
 
 # First treat calls simply as social links (denoted knows), which have no date
-for i in range(0,50):
+for i in range(0,150):
     +knows(calls.iloc[i,1], calls.iloc[i,2])
-
-
+    #+knows(texts.iloc[i,1], texts.iloc[i,2])
 
 # Task 1: Knowing someone is a bi-directional relationship -> define the predicate accordingly
 
+pyDatalog.create_terms('X','Y','Z')
 
-
+knows(X,Y) <= knows(Y,X)
+has_link(X,Y) <= knows(X,Y)
+has_link(X,Z) <= has_link(X,Y) & knows(Y,Z) & (X != Z)
 
 # Task 2: Define the predicate has_link in a way that it is true if there exists some connection (path of people knowing the next link) in the social graph
 # Hints:
 #   check if your predictate works: at least 1 of the following asserts should be true (2 if you read in all 150 communcation records)
-#   assert (has_link('Quandt Katarina', company_Board[0]))
-#   assert (has_link('Quandt Katarina', company_Board[1]))
-#   assert (has_link('Quandt Katarina', company_Board[2]))
 
-
-
+#assert (has_link('Quandt Katarina', company_Board[0]))
+#assert (has_link('Quandt Katarina', company_Board[1]))
+#assert (has_link('Quandt Katarina', company_Board[2]))
 
 # Task 3: You already know that a connection exists; now give the concrete paths between the board members and the suspect
 # Hints:
@@ -48,14 +48,34 @@ for i in range(0,50):
 #   (X._not_in(P2)) is used to check wether x is not in path P2
 #   (P==P2+[Z]) declares P as a new path containing P2 and Z
 
+pyDatalog.create_terms('P','P2','path')
 
+path(X,Y,P) <= knows(X,Y) & (P==[])
+path(X,Z,P) <= path(X,Y,P2) & knows(Y,Z) & (X!=Z) & (X._not_in(P2)) & (Z._not_in(P2)) & (P==P2+[Y])
 
+#for board_member in company_Board:
+#    print(f'"{board_member}" überprüfen...')
+#    if has_link(suspect, board_member):
+#        print(path(board_member, suspect, P))
+#    else:
+#        print('kein Pfad gefunden')
 
 # Task 4: There are so many path, therefore we are only interested in short pahts.
 # find all the paths between the suspect and the company board, which contain five poeple or less
 
+pyDatalog.create_terms('C','C2','path_cost','short_paths')
 
+path_cost(X,Y,P,C) <= knows(X,Y) & (P==[]) & (C==0)
+path_cost(X,Y,P,C) <= path_cost(X,Z,P2,C2) & knows(Y,Z) & (X._not_in(P2)) & (Z._not_in(P2)) & (P==P2+[Y]) & (C==C2+1)
 
+short_paths(X,Y,P) <= path_cost(X,Y,P,C) & (C2==len_(C)) & (C2 <= 5)
+
+for board_member in company_Board:
+    print(f'"{board_member}" überprüfen...')
+    if has_link(suspect, board_member):
+        print(short_paths(board_member, suspect, P))
+    else:
+        print('kein Pfad gefunden')
 
 # ---------------------------------------------------------------------------
 # Call-Data analysis:
@@ -74,25 +94,14 @@ for i in range(0,50): # texts
 
 called(X,Y,Z) <= called(Y,X,Z) # calls are bi-directional
 
-
-
 # Task 5: we are are again interested in links, but this time a connection only valid the links are descending in date 
 # find out who could have actually sent an information, when imposing this new restriction
 # Hints:
 #   You are allowed to naively compare the dates lexicographically using ">" and "<"; it works in this example of concrete dates (but is of course evil in general)
 
-
-
-
 # Task 6: at last find all the communication paths which lead to the suspect, again with the restriction that the dates have to be ordered correctly
 
-
-
-
 # Final task: after seeing this information, who, if anybody, do you think has given a tipp to the suspect?
-
-
-
 
 # General hint (only use on last resort!): 
 #   if nothing else helped, have a look at https://github.com/pcarbonn/pyDatalog/blob/master/pyDatalog/examples/graph.py
